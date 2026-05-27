@@ -3,20 +3,50 @@
   "version": "0.1.0",
   "description": "Local-first CLI for snapshotting terminal coding-agent operational ABIs.",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
+  "bin": {
+    "agentabi": "./dist/cli.js"
+  },
   "exports": {
-    ".": "./src/index.js"
+    ".": "./dist/index.js"
   },
   "files": [
-    "src",
+    "dist",
+    "examples",
     "README.md"
   ],
   "scripts": {
-    "test": "node --test",
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test dist/tests/**/*.test.js",
+    "smoke": "bash scripts/smoke.sh",
     "package:smoke": "npm pack --dry-run",
-    "release:check": "npm test && npm run package:smoke"
+    "release:check": "npm test && npm run check && npm run build && npm run smoke && npm run package:smoke"
   },
-  "keywords": [],
+  "keywords": [
+    "agent",
+    "abi",
+    "cli",
+    "automation",
+    "mcp",
+    "snapshot"
+  ],
   "author": "Roger Chappel",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rogerchappel/agentabi.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
 }
