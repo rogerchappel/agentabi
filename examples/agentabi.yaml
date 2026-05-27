@@ -1,0 +1,14 @@
+agents:
+  - id: node
+    command: node
+    version:
+      args: ["--version"]
+    help:
+      args: ["--help"]
+    requiredEnv:
+      - PATH
+    permissionFlags:
+      - "--help"
+toolCatalogs:
+  - id: example-mcp
+    path: tools.json
