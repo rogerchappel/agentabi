@@ -9,19 +9,78 @@ security posture before using it in production.
 
 ## Install
 
-Replace this section with the generated repository's installation steps.
+From a checkout:
 
 ```sh
-pnpm install
+npm install
+npm run build
+npm link
 ```
 
 ## Use
 
-Replace this section with the smallest useful example for the generated
-repository.
+Create a starter config:
 
 ```sh
-pnpm dev
+agentabi init
+```
+
+Capture a deterministic local ABI snapshot:
+
+```sh
+agentabi capture --config agentabi.yaml --output agentabi.lock.json
+```
+
+Check the current machine against a committed lockfile:
+
+```sh
+agentabi check --config agentabi.yaml --lock agentabi.lock.json
+```
+
+Compare two snapshots:
+
+```sh
+agentabi diff baseline.json current.json --json
+```
+
+`check` exits non-zero when breaking changes are found.
+
+## Config
+
+```yaml
+agents:
+  - id: codex
+    command: codex
+    version:
+      args: ["--version"]
+    help:
+      args: ["--help"]
+    requiredEnv:
+      - OPENAI_API_KEY
+    permissionFlags:
+      - "--sandbox"
+toolCatalogs:
+  - id: mcp
+    path: tools.json
+```
+
+`agentabi` records only whether required environment variables are present, not
+their values. Probes are restricted to safe `--version`, `-v`, `--help`, and
+`-h` arguments.
+
+## Automation Examples
+
+Cron:
+
+```cron
+0 8 * * * cd /path/to/repo && agentabi check --config agentabi.yaml --lock agentabi.lock.json
+```
+
+Multi-agent runner preflight:
+
+```sh
+agentabi check --config agentabi.yaml --lock agentabi.lock.json
+npm run agent-workflow
 ```
 
 ## Verify
@@ -32,7 +91,9 @@ Run the local validation script before opening a pull request:
 bash scripts/validate.sh
 ```
 
-`scripts/validate.sh` runs the repository's standard local checks when they are defined and will also run `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as a skip, not a failure.
+`scripts/validate.sh` runs typecheck, tests, build, smoke, packaging checks, and
+`agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as
+a skip, not a failure.
 
 ## Contributing
 
@@ -41,10 +102,7 @@ should be small, reviewable, and verified before review.
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance. Replace
-the default security policy before publishing the generated repository.
-
-These links assume this README has been copied to the generated repository root.
+See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
 
 ## License
 

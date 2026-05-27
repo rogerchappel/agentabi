@@ -6,15 +6,14 @@ contributors, and implementation constraints.
 
 ## Now
 
-- Define the smallest useful project scope.
-- Keep repository setup, documentation, and verification easy for contributors
-  to follow.
-- Ship small, reviewable improvements.
+- Stabilize the V1 snapshot schema before publishing the first package.
+- Expand fixtures for common terminal agents and MCP catalog shapes.
+- Keep repository setup, documentation, and verification easy for contributors.
 
 ## Next
 
-- Add the next capabilities that directly support the project's primary users.
-- Improve tests, docs, and examples around the most used workflows.
+- Add machine-readable severity policy configuration.
+- Add better human-readable diff output for large tool catalogs.
 - Reduce setup friction discovered during early use.
 
 ## Later
