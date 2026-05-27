@@ -11,13 +11,14 @@
     ".": "./dist/index.js"
   },
   "files": [
-    "dist",
+    "dist/*.d.ts",
+    "dist/*.js",
     "examples",
     "README.md"
   ],
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/cli.js",
     "check": "tsc --noEmit",
     "test": "npm run build && node --test dist/tests/**/*.test.js",
     "smoke": "bash scripts/smoke.sh",
