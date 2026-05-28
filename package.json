@@ -11,8 +11,11 @@
     ".": "./dist/index.js"
   },
   "files": [
+    "CHANGELOG.md",
+    "SECURITY.md",
     "dist/*.d.ts",
     "dist/*.js",
+    "docs",
     "examples",
     "README.md"
   ],
