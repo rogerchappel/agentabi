@@ -25,3 +25,14 @@ test('normalizeTools accepts MCP list_tools results and hashes input schemas', (
   assert.equal(tools[0]?.description, 'Write a file');
   assert.match(tools[0]?.inputSchemaHash ?? '', /^[a-f0-9]{64}$/);
 });
+
+test('normalizeTools rejects duplicate tool names', () => {
+  assert.throws(
+    () =>
+      normalizeTools([
+        { name: 'read', inputSchema: { type: 'object' } },
+        { name: 'read', inputSchema: { type: 'object', properties: { path: { type: 'string' } } } }
+      ]),
+    /duplicate tool name "read"/
+  );
+});

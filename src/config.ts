@@ -20,6 +20,8 @@ export function normalizeConfig(value: unknown, source = 'config'): AgentAbiConf
   const toolCatalogs = optionalArray(value.toolCatalogs, `${source}.toolCatalogs`).map((catalog, index) =>
     normalizeToolCatalog(catalog, `${source}.toolCatalogs[${index}]`)
   );
+  assertUniqueIds(agents, `${source}.agents`);
+  assertUniqueIds(toolCatalogs, `${source}.toolCatalogs`);
 
   return {
     agents: agents.sort((left, right) => left.id.localeCompare(right.id)),
@@ -142,4 +144,14 @@ function optionalPositiveInteger(value: unknown, label: string): number | undefi
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function assertUniqueIds(items: { id: string }[], label: string): void {
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item.id)) {
+      throw new Error(`${label} contains duplicate id "${item.id}".`);
+    }
+    seen.add(item.id);
+  }
 }

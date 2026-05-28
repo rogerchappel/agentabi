@@ -15,9 +15,11 @@ export async function readToolCatalog(id: string, source: string, stdin?: string
 
 export function normalizeTools(value: unknown): ToolSchemaSummary[] {
   const tools = extractToolArray(value);
-  return tools
+  const normalized = tools
     .map((tool, index) => normalizeTool(tool, index))
     .sort((left, right) => left.name.localeCompare(right.name));
+  assertUniqueToolNames(normalized);
+  return normalized;
 }
 
 function extractToolArray(value: unknown): unknown[] {
@@ -74,4 +76,14 @@ async function readAllStdin(): Promise<string> {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function assertUniqueToolNames(tools: ToolSchemaSummary[]): void {
+  const seen = new Set<string>();
+  for (const tool of tools) {
+    if (seen.has(tool.name)) {
+      throw new Error(`Tool catalog contains duplicate tool name "${tool.name}".`);
+    }
+    seen.add(tool.name);
+  }
 }

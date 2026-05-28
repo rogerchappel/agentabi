@@ -44,3 +44,30 @@ test('normalizeConfig rejects probe configs without args', () => {
     /help\.args must be a non-empty array of strings/
   );
 });
+
+test('normalizeConfig rejects duplicate agent ids', () => {
+  assert.throws(
+    () =>
+      normalizeConfig({
+        agents: [
+          { id: 'codex', command: 'codex' },
+          { id: 'codex', command: 'codex-next' }
+        ]
+      }),
+    /agents contains duplicate id "codex"/
+  );
+});
+
+test('normalizeConfig rejects duplicate tool catalog ids', () => {
+  assert.throws(
+    () =>
+      normalizeConfig({
+        agents: [{ id: 'codex', command: 'codex' }],
+        toolCatalogs: [
+          { id: 'mcp', path: 'tools.json' },
+          { id: 'mcp', path: 'other-tools.json' }
+        ]
+      }),
+    /toolCatalogs contains duplicate id "mcp"/
+  );
+});
