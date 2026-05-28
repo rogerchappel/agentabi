@@ -24,3 +24,23 @@ test('normalizeConfig validates and sorts config entities', () => {
     ['tools-a', 'tools-b']
   );
 });
+
+test('normalizeConfig rejects explicitly empty probe args', () => {
+  assert.throws(
+    () =>
+      normalizeConfig({
+        agents: [{ id: 'codex', command: 'codex', version: { args: [] } }]
+      }),
+    /version\.args must be a non-empty array of strings/
+  );
+});
+
+test('normalizeConfig rejects probe configs without args', () => {
+  assert.throws(
+    () =>
+      normalizeConfig({
+        agents: [{ id: 'codex', command: 'codex', help: { timeoutMs: 1000 } }]
+      }),
+    /help\.args must be a non-empty array of strings/
+  );
+});

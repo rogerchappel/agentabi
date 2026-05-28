@@ -75,7 +75,7 @@ function optionalProbe(value: unknown, label: string): ProbeConfig | undefined {
   }
 
   return {
-    args: optionalStringArray(value.args, `${label}.args`),
+    args: requireStringArray(value.args, `${label}.args`),
     timeoutMs: optionalPositiveInteger(value.timeoutMs, `${label}.timeoutMs`) ?? 5000
   };
 }
@@ -106,6 +106,14 @@ function requireString(value: unknown, label: string): string {
   }
 
   return value;
+}
+
+function requireStringArray(value: unknown, label: string): string[] {
+  if (!Array.isArray(value) || value.length === 0 || !value.every((item) => typeof item === 'string')) {
+    throw new Error(`${label} must be a non-empty array of strings.`);
+  }
+
+  return [...value];
 }
 
 function optionalStringArray(value: unknown, label: string): string[] {
