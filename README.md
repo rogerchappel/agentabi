@@ -80,7 +80,7 @@ Multi-agent runner preflight:
 
 ```sh
 agentabi check --config agentabi.yaml --lock agentabi.lock.json
-./run-agent-workflow.sh
+your-agent-workflow-command
 ```
 
 ## Verify
@@ -88,6 +88,12 @@ agentabi check --config agentabi.yaml --lock agentabi.lock.json
 Run the local validation script before opening a pull request:
 
 ```sh
+npm test
+npm run check
+npm run build
+npm run smoke
+npm run package:smoke
+npm run release:check
 bash scripts/validate.sh
 ```
 

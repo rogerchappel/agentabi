@@ -5,7 +5,10 @@ This directory holds project documentation.
 ## Contents
 
 - [Product requirements](PRD.md)
+- [Task breakdown](TASKS.md)
+- [Orchestration plan](ORCHESTRATION.md)
 - [Example config](../examples/agentabi.yaml)
+- [Release candidate checklist](release-candidate.md)
 - [Contributing guide](../CONTRIBUTING.md)
 - [Security policy](../SECURITY.md)
 - [Agent instructions](../AGENTS.md)
