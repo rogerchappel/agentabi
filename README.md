@@ -80,7 +80,7 @@ Multi-agent runner preflight:
 
 ```sh
 agentabi check --config agentabi.yaml --lock agentabi.lock.json
-npm run agent-workflow
+./run-agent-workflow.sh
 ```
 
 ## Verify
