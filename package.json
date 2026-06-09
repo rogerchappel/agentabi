@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "agentabi": "./dist/cli.js"
+    "agentabi": "dist/cli.js"
   },
   "exports": {
     ".": "./dist/index.js"
@@ -15,7 +15,8 @@
     "dist/*.js",
     "examples",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md"
   ],
   "scripts": {
     "prebuild": "rm -rf dist",
@@ -38,7 +39,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rogerchappel/agentabi.git"
+    "url": "git+https://github.com/rogerchappel/agentabi.git"
   },
   "engines": {
     "node": ">=20"
