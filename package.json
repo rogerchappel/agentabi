@@ -22,13 +22,14 @@
     "CODE_OF_CONDUCT.md"
   ],
   "scripts": {
-    "prebuild": "rm -rf dist",
     "build": "tsc && chmod +x dist/cli.js",
     "check": "tsc --noEmit",
+    "lint": "tsc --noEmit",
     "test": "npm run build && node --test dist/tests/**/*.test.js",
     "smoke": "bash scripts/smoke.sh",
     "package:smoke": "npm pack --dry-run",
     "release:check": "npm test && npm run check && npm run build && npm run smoke && npm run package:smoke",
+    "prebuild": "rm -rf dist",
     "prepack": "npm run build"
   },
   "keywords": [
