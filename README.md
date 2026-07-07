@@ -101,6 +101,17 @@ bash scripts/validate.sh
 `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as
 a skip, not a failure.
 
+## Limitations
+
+- `agentabi` captures configured command, help, version, environment-presence,
+  and tool-catalog signals; it does not prove an agent's runtime behavior is
+  compatible.
+- Probes are intentionally limited to safe help and version style arguments.
+  Workflows that need deeper integration checks should add separate project
+  tests.
+- Lockfiles can expose local command names, configured tool IDs, and whether
+  required environment variables were present. Review snapshots before sharing
+  them outside a trusted repository.
 
 ## Verification
 
