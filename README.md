@@ -68,6 +68,25 @@ toolCatalogs:
 their values. Probes are restricted to safe `--version`, `-v`, `--help`, and
 `-h` arguments.
 
+### Probe timeouts
+
+Each probe has a 5-second deadline by default; set `timeoutMs` on that probe to
+use a different positive duration. On POSIX systems, a probe runs in its own
+process group. At the deadline, `agentabi` sends `SIGTERM` to the group, allows
+a 250 ms cleanup grace period, and then sends `SIGKILL` to any remaining group
+members. This prevents descendants that inherited stdout or stderr from keeping
+the probe open.
+
+On Windows, `agentabi` uses `taskkill /T /F` to terminate the process tree and
+falls back to terminating the direct child if `taskkill` is unavailable. After
+the same bounded grace period, inherited output pipes are closed so the probe
+cannot wait indefinitely.
+
+Timed-out results always set `timedOut` to `true` and `exitCode` to `null`.
+`signal` is `SIGTERM` when a POSIX tree exits during the grace period and
+`SIGKILL` when escalation (or the Windows forced tree fallback) is used. Output
+captured before pipe closure is retained.
+
 ## Automation Examples
 
 Cron:
