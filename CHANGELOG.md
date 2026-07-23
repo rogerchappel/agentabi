@@ -11,6 +11,11 @@ format and uses semantic versioning when versioned releases are published.
 
 - Initial project setup.
 
+### Fixed
+
+- Enforce probe deadlines across descendant process trees, including escalation
+  for SIGTERM-resistant commands and bounded handling of inherited output pipes.
+
 ## Release Links
 
 - Unreleased:

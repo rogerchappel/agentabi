@@ -5,6 +5,7 @@ import { constants as fsConstants } from 'node:fs';
 import type { ProbeConfig, ProbeResult } from './types.js';
 
 const SAFE_ARGS = new Set(['--version', '-v', '--help', '-h']);
+const TERMINATION_GRACE_MS = 250;
 
 export async function resolveCommand(command: string, env = process.env): Promise<string | null> {
   if (command.includes('/') || isAbsolute(command)) {
@@ -32,17 +33,54 @@ export async function runProbe(command: string, probe: ProbeConfig): Promise<Pro
   return await new Promise<ProbeResult>((resolve) => {
     const child = spawn(command, probe.args, {
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: process.env
+      env: process.env,
+      detached: process.platform !== 'win32'
     });
     let stdout = '';
     let stderr = '';
     let settled = false;
     let timedOut = false;
+    let terminationTimer: NodeJS.Timeout | undefined;
 
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill('SIGTERM');
+      if (process.platform === 'win32') {
+        terminateWindowsTree(child.pid);
+      } else {
+        terminatePosixTree(child.pid, 'SIGTERM');
+      }
+
+      terminationTimer = setTimeout(() => {
+        const signal =
+          process.platform === 'win32'
+            ? 'SIGKILL'
+            : terminatePosixTree(child.pid, 'SIGKILL')
+              ? 'SIGKILL'
+              : 'SIGTERM';
+        child.stdout.destroy();
+        child.stderr.destroy();
+        finish({
+          args: probe.args,
+          exitCode: null,
+          signal,
+          stdout: normalizeOutput(stdout),
+          stderr: normalizeOutput(stderr),
+          timedOut: true
+        });
+      }, TERMINATION_GRACE_MS);
     }, timeoutMs);
+
+    const finish = (result: ProbeResult): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      if (terminationTimer) {
+        clearTimeout(terminationTimer);
+      }
+      resolve(result);
+    };
 
     child.stdout.setEncoding('utf8');
     child.stderr.setEncoding('utf8');
@@ -53,12 +91,10 @@ export async function runProbe(command: string, probe: ProbeConfig): Promise<Pro
       stderr += chunk;
     });
     child.on('error', (error) => {
-      if (settled) {
+      if (settled || timedOut) {
         return;
       }
-      settled = true;
-      clearTimeout(timer);
-      resolve({
+      finish({
         args: probe.args,
         exitCode: null,
         signal: null,
@@ -68,12 +104,10 @@ export async function runProbe(command: string, probe: ProbeConfig): Promise<Pro
       });
     });
     child.on('close', (exitCode, signal) => {
-      if (settled) {
+      if (settled || timedOut) {
         return;
       }
-      settled = true;
-      clearTimeout(timer);
-      resolve({
+      finish({
         args: probe.args,
         exitCode,
         signal,
@@ -95,6 +129,45 @@ export function assertSafeProbe(probe: ProbeConfig): void {
 
 function normalizeOutput(value: string): string {
   return value.replace(/\r\n/g, '\n').trim();
+}
+
+function terminatePosixTree(pid: number | undefined, signal: NodeJS.Signals): boolean {
+  if (pid === undefined) {
+    return false;
+  }
+
+  try {
+    process.kill(-pid, signal);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ESRCH') {
+      return false;
+    }
+    try {
+      process.kill(pid, signal);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function terminateWindowsTree(pid: number | undefined): void {
+  if (pid === undefined) {
+    return;
+  }
+
+  const taskkill = spawn('taskkill.exe', ['/pid', String(pid), '/t', '/f'], {
+    stdio: 'ignore',
+    windowsHide: true
+  });
+  taskkill.on('error', () => {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // The process already exited.
+    }
+  });
 }
 
 async function isExecutable(filePath: string): Promise<boolean> {
