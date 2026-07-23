@@ -7,6 +7,30 @@ import { runProbe } from '../probe.js';
 
 const POSIX_ONLY = { skip: process.platform === 'win32' };
 
+test('runProbe preserves successful probe output', async () => {
+  const result = await runProbe(process.execPath, { args: ['--version'], timeoutMs: 2_000 });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.signal, null);
+  assert.match(result.stdout, /^v\d+\./);
+  assert.equal(result.stderr, '');
+  assert.equal(result.timedOut, false);
+});
+
+test('runProbe reports spawn failures without waiting for the deadline', async () => {
+  const startedAt = Date.now();
+  const result = await runProbe(join(tmpdir(), 'agentabi-command-that-does-not-exist'), {
+    args: ['--help'],
+    timeoutMs: 2_000
+  });
+
+  assert.equal(result.exitCode, null);
+  assert.equal(result.signal, null);
+  assert.match(result.stderr, /ENOENT/);
+  assert.equal(result.timedOut, false);
+  assert.ok(Date.now() - startedAt < 1_000);
+});
+
 test('runProbe terminates descendants without waiting for inherited pipes', POSIX_ONLY, async (t) => {
   const fixture = await createProbeFixture(false);
   t.after(fixture.cleanup);
