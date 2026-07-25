@@ -48,12 +48,14 @@ test('runProbe escalates SIGTERM-resistant process trees without leaking childre
   const fixture = await createProbeFixture(true);
   t.after(fixture.cleanup);
 
+  const resultPromise = runProbe(fixture.command, { args: ['--help'], timeoutMs: 2_000 });
+  await fixture.ready();
   const startedAt = Date.now();
-  const result = await runProbe(fixture.command, { args: ['--help'], timeoutMs: 500 });
+  const result = await resultPromise;
 
   assert.equal(result.timedOut, true);
   assert.equal(result.signal, 'SIGKILL');
-  assert.ok(Date.now() - startedAt < 1_200, 'probe should bound resistant-process cleanup');
+  assert.ok(Date.now() - startedAt < 2_700, 'probe should bound resistant-process cleanup after readiness');
   await assertProcessGone(await fixture.descendantPid());
 });
 
@@ -61,12 +63,16 @@ async function createProbeFixture(resistSigterm: boolean): Promise<{
   command: string;
   cleanup: () => Promise<void>;
   descendantPid: () => Promise<number>;
+  ready: () => Promise<void>;
 }> {
   const directory = await mkdtemp(join(tmpdir(), 'agentabi-probe-'));
   const command = join(directory, 'probe.mjs');
   const pidFile = join(directory, 'descendant.pid');
+  const readyFile = join(directory, 'ready');
   const signalHandler = resistSigterm ? "process.on('SIGTERM', () => {});" : '';
-  const descendantSource = `${signalHandler} setTimeout(() => process.exit(0), 4000);`;
+  const descendantSource = `const { writeFileSync } = require('node:fs'); ${signalHandler}
+writeFileSync(${JSON.stringify(readyFile)}, '');
+setTimeout(() => process.exit(0), 4000);`;
   const fixtureSource = `#!/usr/bin/env node
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
@@ -84,8 +90,25 @@ setTimeout(() => process.exit(0), 4000);
   return {
     command,
     cleanup: () => rm(directory, { recursive: true, force: true }),
-    descendantPid: async () => Number(await readFile(pidFile, 'utf8'))
+    descendantPid: async () => Number(await readFile(pidFile, 'utf8')),
+    ready: async () => await waitForFile(readyFile)
   };
+}
+
+async function waitForFile(filePath: string): Promise<void> {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      await readFile(filePath);
+      return;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+
+  assert.fail(`fixture did not become ready: ${filePath}`);
 }
 
 async function assertProcessGone(pid: number): Promise<void> {
