@@ -68,6 +68,10 @@ toolCatalogs:
 their values. Probes are restricted to safe `--version`, `-v`, `--help`, and
 `-h` arguments.
 
+Agent IDs and tool-catalog IDs must be unique within the config. Snapshot
+comparisons also reject duplicate agent IDs, catalog IDs, or tool names with
+entry locations, rather than silently discarding one of the conflicting entries.
+
 ### Probe timeouts
 
 Each probe has a 5-second deadline by default; set `timeoutMs` on that probe to
