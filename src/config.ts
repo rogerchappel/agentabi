@@ -20,11 +20,24 @@ export function normalizeConfig(value: unknown, source = 'config'): AgentAbiConf
   const toolCatalogs = optionalArray(value.toolCatalogs, `${source}.toolCatalogs`).map((catalog, index) =>
     normalizeToolCatalog(catalog, `${source}.toolCatalogs[${index}]`)
   );
+  assertUnique(agents, 'id', `${source}.agents`);
+  assertUnique(toolCatalogs, 'id', `${source}.toolCatalogs`);
 
   return {
     agents: agents.sort((left, right) => left.id.localeCompare(right.id)),
     toolCatalogs: toolCatalogs.sort((left, right) => left.id.localeCompare(right.id))
   };
+}
+
+function assertUnique<T extends Record<K, string>, K extends keyof T>(items: T[], key: K, label: string): void {
+  const firstIndex = new Map<string, number>();
+  items.forEach((item, index) => {
+    const first = firstIndex.get(item[key]);
+    if (first !== undefined) {
+      throw new Error(`${label} has duplicate ${String(key)} "${item[key]}" at entries [${first}] and [${index}].`);
+    }
+    firstIndex.set(item[key], index);
+  });
 }
 
 export function resolveFromConfig(configPath: string, candidate: string): string {

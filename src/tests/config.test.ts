@@ -24,3 +24,17 @@ test('normalizeConfig validates and sorts config entities', () => {
     ['tools-a', 'tools-b']
   );
 });
+
+test('normalizeConfig rejects duplicate IDs with source-qualified entry locations', () => {
+  assert.throws(
+    () => normalizeConfig({ agents: [{ id: 'same', command: 'node' }, { id: 'same', command: 'other' }] }, 'agentabi.yml'),
+    /agentabi\.yml\.agents has duplicate id "same" at entries \[0\] and \[1\]/
+  );
+  assert.throws(
+    () => normalizeConfig({
+      agents: [{ id: 'agent', command: 'node' }],
+      toolCatalogs: [{ id: 'same', path: 'a.json' }, { id: 'same', path: 'b.json' }]
+    }, 'agentabi.yml'),
+    /agentabi\.yml\.toolCatalogs has duplicate id "same" at entries \[0\] and \[1\]/
+  );
+});

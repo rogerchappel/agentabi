@@ -86,3 +86,22 @@ test('diffSnapshots treats additions as informational', () => {
   assert.equal(report.summary.info, 1);
   assert.equal(report.findings[0]?.code, 'agent.added');
 });
+
+test('diffSnapshots rejects duplicate identities instead of collapsing snapshot entries', () => {
+  assert.throws(
+    () => diffSnapshots({ ...baseline, agents: [...baseline.agents, baseline.agents[0]!] }, baseline),
+    /baseline\.agents has duplicate id "codex" at entries \[0\] and \[1\]/
+  );
+  assert.throws(
+    () => diffSnapshots(baseline, { ...baseline, toolCatalogs: [...baseline.toolCatalogs, baseline.toolCatalogs[0]!] }),
+    /current\.toolCatalogs has duplicate id "mcp" at entries \[0\] and \[1\]/
+  );
+  const duplicateTool = { ...baseline.toolCatalogs[0]!, tools: [
+    baseline.toolCatalogs[0]!.tools[0]!,
+    baseline.toolCatalogs[0]!.tools[0]!
+  ] };
+  assert.throws(
+    () => diffSnapshots(baseline, { ...baseline, toolCatalogs: [duplicateTool] }),
+    /current\.toolCatalogs\[0\]\.tools has duplicate name "read" at entries \[0\] and \[1\]/
+  );
+});
