@@ -2,6 +2,8 @@ import type { AgentSnapshot, DiffFinding, DiffReport, FindingSeverity, Snapshot,
 
 export function diffSnapshots(baseline: Snapshot, current: Snapshot): DiffReport {
   const findings: DiffFinding[] = [];
+  validateSnapshotIdentity(baseline, 'baseline');
+  validateSnapshotIdentity(current, 'current');
 
   if (baseline.schemaVersion !== current.schemaVersion) {
     findings.push({
@@ -23,6 +25,30 @@ export function diffSnapshots(baseline: Snapshot, current: Snapshot): DiffReport
     summary,
     findings
   };
+}
+
+function validateSnapshotIdentity(snapshot: Snapshot, label: string): void {
+  assertUnique(snapshot.agents, 'id', `${label}.agents`);
+  assertUnique(snapshot.toolCatalogs, 'id', `${label}.toolCatalogs`);
+  snapshot.toolCatalogs.forEach((catalog, index) =>
+    assertUnique(catalog.tools, 'name', `${label}.toolCatalogs[${index}].tools`)
+  );
+}
+
+function assertUnique<T extends { id?: string; name?: string }>(
+  items: T[],
+  key: 'id' | 'name',
+  label: string
+): void {
+  const firstIndex = new Map<string, number>();
+  items.forEach((item, index) => {
+    const identity = item[key] ?? '';
+    const first = firstIndex.get(identity);
+    if (first !== undefined) {
+      throw new Error(`${label} has duplicate ${key} "${identity}" at entries [${first}] and [${index}].`);
+    }
+    firstIndex.set(identity, index);
+  });
 }
 
 function compareAgents(
