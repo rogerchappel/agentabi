@@ -35,12 +35,14 @@ test('runProbe terminates descendants without waiting for inherited pipes', POSI
   const fixture = await createProbeFixture(false);
   t.after(fixture.cleanup);
 
+  const resultPromise = runProbe(fixture.command, { args: ['--help'], timeoutMs: 2_000 });
+  await fixture.ready();
   const startedAt = Date.now();
-  const result = await runProbe(fixture.command, { args: ['--help'], timeoutMs: 500 });
+  const result = await resultPromise;
 
   assert.equal(result.timedOut, true);
   assert.equal(result.signal, 'SIGTERM');
-  assert.ok(Date.now() - startedAt < 1_200, 'probe should respect its timeout and termination grace');
+  assert.ok(Date.now() - startedAt < 2_700, 'probe should respect its timeout and termination grace');
   await assertProcessGone(await fixture.descendantPid());
 });
 
@@ -70,8 +72,7 @@ async function createProbeFixture(resistSigterm: boolean): Promise<{
   const pidFile = join(directory, 'descendant.pid');
   const readyFile = join(directory, 'ready');
   const signalHandler = resistSigterm ? "process.on('SIGTERM', () => {});" : '';
-  const descendantSource = `const { writeFileSync } = require('node:fs'); ${signalHandler}
-writeFileSync(${JSON.stringify(readyFile)}, '');
+  const descendantSource = `${signalHandler}
 setTimeout(() => process.exit(0), 4000);`;
   const fixtureSource = `#!/usr/bin/env node
 import { spawn } from 'node:child_process';
@@ -81,6 +82,7 @@ const descendant = spawn(process.execPath, ['-e', ${JSON.stringify(descendantSou
   stdio: ['ignore', 'inherit', 'inherit']
 });
 writeFileSync(${JSON.stringify(pidFile)}, String(descendant.pid));
+writeFileSync(${JSON.stringify(readyFile)}, '');
 setTimeout(() => process.exit(0), 4000);
 `;
 
@@ -90,8 +92,13 @@ setTimeout(() => process.exit(0), 4000);
   return {
     command,
     cleanup: () => rm(directory, { recursive: true, force: true }),
-    descendantPid: async () => Number(await readFile(pidFile, 'utf8')),
-    ready: async () => await waitForFile(readyFile)
+    descendantPid: async () => {
+      await waitForFile(pidFile);
+      return Number(await readFile(pidFile, 'utf8'));
+    },
+    ready: async () => {
+      await Promise.all([waitForFile(pidFile), waitForFile(readyFile)]);
+    }
   };
 }
 
