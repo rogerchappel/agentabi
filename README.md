@@ -66,7 +66,8 @@ toolCatalogs:
 
 `agentabi` records only whether required environment variables are present, not
 their values. Probes are restricted to safe `--version`, `-v`, `--help`, and
-`-h` arguments.
+`-h` arguments. When a probe is configured, `args` must contain at least one of
+those arguments; omit `version` or `help` entirely to use its default probe.
 
 Agent IDs and tool-catalog IDs must be unique within the config. Snapshot
 comparisons also reject duplicate agent IDs, catalog IDs, or tool names with
