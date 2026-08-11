@@ -120,6 +120,10 @@ export async function runProbe(command: string, probe: ProbeConfig): Promise<Pro
 }
 
 export function assertSafeProbe(probe: ProbeConfig): void {
+  if (probe.args.length === 0) {
+    throw new Error('Probe args must include --version, -v, --help, or -h.');
+  }
+
   for (const arg of probe.args) {
     if (!SAFE_ARGS.has(arg)) {
       throw new Error(`Unsafe probe arg "${arg}". agentabi only runs --version/-v/--help/-h probes.`);

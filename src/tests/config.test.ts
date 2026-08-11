@@ -38,3 +38,32 @@ test('normalizeConfig rejects duplicate IDs with source-qualified entry location
     /agentabi\.yml\.toolCatalogs has duplicate id "same" at entries \[0\] and \[1\]/
   );
 });
+
+test('normalizeConfig rejects configured probes without args', () => {
+  for (const probe of ['version', 'help', 'smoke']) {
+    for (const configuredProbe of [{}, { args: [] }]) {
+      assert.throws(
+        () => normalizeConfig({
+          agents: [{ id: 'agent', command: 'node', [probe]: configuredProbe }]
+        }, 'agentabi.yml'),
+        new RegExp(`agentabi\\.yml\\.agents\\[0\\]\\.${probe}\\.args must be a non-empty array`)
+      );
+    }
+  }
+});
+
+test('normalizeConfig accepts explicit safe probe args', () => {
+  const config = normalizeConfig({
+    agents: [{
+      id: 'agent',
+      command: 'node',
+      version: { args: ['-v'] },
+      help: { args: ['-h'] },
+      smoke: { args: ['--version', '--help'] }
+    }]
+  });
+
+  assert.deepEqual(config.agents[0]?.version?.args, ['-v']);
+  assert.deepEqual(config.agents[0]?.help?.args, ['-h']);
+  assert.deepEqual(config.agents[0]?.smoke?.args, ['--version', '--help']);
+});

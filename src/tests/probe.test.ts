@@ -17,6 +17,13 @@ test('runProbe preserves successful probe output', async () => {
   assert.equal(result.timedOut, false);
 });
 
+test('runProbe rejects empty args before executing the command', async () => {
+  await assert.rejects(
+    runProbe(process.execPath, { args: [] }),
+    /Probe args must include --version, -v, --help, or -h/
+  );
+});
+
 test('runProbe reports spawn failures without waiting for the deadline', async () => {
   const startedAt = Date.now();
   const result = await runProbe(join(tmpdir(), 'agentabi-command-that-does-not-exist'), {

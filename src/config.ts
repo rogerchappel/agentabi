@@ -87,8 +87,13 @@ function optionalProbe(value: unknown, label: string): ProbeConfig | undefined {
     throw new Error(`${label} must be an object.`);
   }
 
+  const args = optionalStringArray(value.args, `${label}.args`);
+  if (args.length === 0) {
+    throw new Error(`${label}.args must be a non-empty array when the probe is configured.`);
+  }
+
   return {
-    args: optionalStringArray(value.args, `${label}.args`),
+    args,
     timeoutMs: optionalPositiveInteger(value.timeoutMs, `${label}.timeoutMs`) ?? 5000
   };
 }

@@ -13,6 +13,8 @@ format and uses semantic versioning when versioned releases are published.
 
 ### Fixed
 
+- Reject explicitly configured probes with empty arguments so agent commands
+  cannot run without a version or help flag.
 - Enforce probe deadlines across descendant process trees, including escalation
   for SIGTERM-resistant commands and bounded handling of inherited output pipes.
 
