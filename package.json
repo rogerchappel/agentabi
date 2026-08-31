@@ -51,12 +51,12 @@
     "node": ">=20"
   },
   "dependencies": {
-    "commander": "^12.1.0",
+    "commander": "^15.0.0",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
-    "@types/node": "^22.19.19",
-    "typescript": "^5.7.2"
+    "@types/node": "^26.4.0",
+    "typescript": "^7.0.2"
   },
   "bugs": {
     "url": "https://github.com/rogerchappel/agentabi/issues"
