@@ -125,6 +125,11 @@ bash scripts/validate.sh
 `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as
 a skip, not a failure.
 
+The CI release gate runs on Node 20, the minimum version declared by
+`engines.node`, and Node 24, the current supported runtime. The macOS lifecycle
+stress job and release workflows use Node 24. `npm run check:ci-runtime` keeps
+the CI matrix aligned with the declared minimum.
+
 ## Limitations
 
 - `agentabi` captures configured command, help, version, environment-presence,
