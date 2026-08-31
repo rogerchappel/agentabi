@@ -28,7 +28,8 @@
     "test": "npm run build && node --test dist/tests/**/*.test.js",
     "smoke": "bash scripts/smoke.sh",
     "package:smoke": "node scripts/package-smoke.mjs",
-    "release:check": "npm test && npm run check && npm run build && npm run smoke && npm run package:smoke",
+    "check:ci-runtime": "node scripts/check-ci-runtime.mjs",
+    "release:check": "npm run check:ci-runtime && npm test && npm run check && npm run build && npm run smoke && npm run package:smoke",
     "prebuild": "rm -rf dist",
     "prepack": "npm run build"
   },
