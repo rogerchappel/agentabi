@@ -13,6 +13,8 @@ format and uses semantic versioning when versioned releases are published.
 
 ### Fixed
 
+- Validate snapshot JSON structure before checks and diffs, with stable
+  source-qualified diagnostics for malformed fields.
 - Reject explicitly configured probes with empty arguments so agent commands
   cannot run without a version or help flag.
 - Enforce probe deadlines across descendant process trees, including escalation
