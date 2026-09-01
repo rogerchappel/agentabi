@@ -43,7 +43,10 @@ Compare two snapshots:
 agentabi diff baseline.json current.json --json
 ```
 
-`check` exits non-zero when breaking changes are found.
+`check` exits non-zero when breaking changes are found. Both `check` and `diff`
+validate snapshot structure before comparison. Invalid JSON, missing fields, and
+wrong-typed nested values exit non-zero with a diagnostic containing the source
+file and exact field path; malformed input is never treated as an ABI change.
 
 ## Config
 
