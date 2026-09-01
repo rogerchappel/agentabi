@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { loadConfig } from './config.js';
 import { diffSnapshots } from './diff.js';
 import { captureSnapshot } from './snapshot.js';
+import { validateSnapshot } from './snapshot-validation.js';
 import { stableStringify } from './stable-json.js';
 import type { DiffReport, Snapshot } from './types.js';
 
@@ -70,7 +71,14 @@ async function captureFromConfig(configPath: string): Promise<Snapshot> {
 }
 
 async function readSnapshot(filePath: string): Promise<Snapshot> {
-  return JSON.parse(await readFile(filePath, 'utf8')) as Snapshot;
+  const contents = await readFile(filePath, 'utf8');
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(contents) as unknown;
+  } catch (error) {
+    throw new Error(`${filePath} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  return validateSnapshot(parsed, filePath);
 }
 
 async function writeJson(outputPath: string, value: unknown): Promise<void> {
