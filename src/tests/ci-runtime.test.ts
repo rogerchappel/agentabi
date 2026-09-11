@@ -8,14 +8,22 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const script = join(repoRoot, 'scripts', 'check-ci-runtime.mjs');
 
-function runCheck(packagePath, workflowsDir, readmePath) {
+function runCheck(packagePath: string, workflowsDir: string, readmePath: string): string {
   return execFileSync(process.execPath, [script, packagePath, workflowsDir, readmePath], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 }
 
-function writeFixture(directory, { matrix, pinned, engine = '>=20', pinLine = 'node-version: 24' }) {
+function writeFixture(
+  directory: string,
+  { matrix, pinned, engine = '>=20', pinLine = 'node-version: 24' }: {
+    matrix: string;
+    pinned: string;
+    engine?: string;
+    pinLine?: string;
+  },
+) {
   mkdirSync(join(directory, 'workflows'), { recursive: true });
   writeFileSync(
     join(directory, 'package.json'),
@@ -57,12 +65,12 @@ function writeFixture(directory, { matrix, pinned, engine = '>=20', pinLine = 'n
   };
 }
 
-function assertFails(packagePath, workflowsDir, readmePath, expectedFragment) {
-  let failure = null;
+function assertFails(packagePath: string, workflowsDir: string, readmePath: string, expectedFragment: string): void {
+  let failure: { stderr?: string; stdout?: string } | null = null;
   try {
     runCheck(packagePath, workflowsDir, readmePath);
   } catch (error) {
-    failure = error;
+    failure = error as { stderr?: string; stdout?: string };
   }
   assert(failure, 'expected check:ci-runtime to fail');
   const message = String(failure.stderr ?? '') + String(failure.stdout ?? '');
