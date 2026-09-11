@@ -128,10 +128,14 @@ bash scripts/validate.sh
 `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as
 a skip, not a failure.
 
-The CI release gate runs on Node 20, the minimum version declared by
-`engines.node`, and Node 24, the current supported runtime. The macOS lifecycle
-stress job and release workflows use Node 24. `npm run check:ci-runtime` keeps
-the CI matrix aligned with the declared minimum.
+<!-- ci-runtimes: matrix=20,24,26; pinned=24 -->
+
+The CI release gate runs the release checks on Node 20 (the minimum declared by
+`engines.node`; upstream EOL since 2026-04-30), Node 24 (Active LTS), and
+Node 26 (Current per the nodejs.org release schedule). The macOS lifecycle
+stress job and the release workflows pin Node 24, the Active LTS line.
+`npm run check:ci-runtime` fails when these documented runtimes drift from the
+workflows they describe.
 
 ## Limitations
 
