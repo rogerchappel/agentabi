@@ -10,16 +10,9 @@ format and uses semantic versioning when versioned releases are published.
 ### Added
 
 - Initial project setup.
-- `npm run check:ci-runtime` now fails when the README-documented runtime
-  matrix drifts from the CI matrix or when a workflow pins a Node version the
-  README does not document.
 
 ### Fixed
 
-- CI runtime documentation aligned with the nodejs.org release schedule:
-  the verify matrix covers Node 26 (Current), the README no longer calls
-  Node 24 the current runtime, and the macOS lifecycle probe uses
-  actions/checkout v7 like every other workflow.
 - Validate snapshot JSON structure before checks and diffs, with stable
   source-qualified diagnostics for malformed fields.
 - Reject explicitly configured probes with empty arguments so agent commands
