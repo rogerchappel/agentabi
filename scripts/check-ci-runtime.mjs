@@ -24,6 +24,12 @@ const supportedFloor = Number.parseInt(floorMatch[1], 10);
 const matrixMatch = ciWorkflow.match(/node:\s*\[([^\]]+)\]/);
 assert(matrixMatch, 'CI must define a node version matrix');
 const testedMajors = matrixMatch[1].split(',').map((version) => Number.parseInt(version.trim(), 10));
+for (const major of testedMajors) {
+  assert(
+    major >= supportedFloor,
+    `CI Node matrix runtime ${major} is below engines.node floor ${supportedFloor}`,
+  );
+}
 assert(
   testedMajors.includes(supportedFloor),
   `CI Node matrix ${JSON.stringify(testedMajors)} must include engines.node floor ${supportedFloor}`,
