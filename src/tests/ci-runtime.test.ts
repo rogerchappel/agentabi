@@ -138,4 +138,19 @@ describe('check:ci-runtime', () => {
       rmSync(directory, { recursive: true, force: true });
     }
   });
+
+  it('fails when any CI matrix runtime is below the engines.node floor', () => {
+    const directory = mkdtempSync(join('/tmp', 'ci-runtime-below-floor-'));
+    try {
+      const paths = writeFixture(directory, { matrix: '18, 24', pinned: '24' });
+      assertFails(
+        paths.packagePath,
+        paths.workflowsDir,
+        paths.readmePath,
+        'runtime 18 is below engines.node floor 20',
+      );
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
 });
